@@ -391,29 +391,52 @@ function displayPOSProducts(productList) {
 
 function addToCart(productId) {
   const product = allProducts.find(p => p.id === productId);
-  if (!product || product.quantity <= 0) {
+  
+  console.log('🛒 addToCart() Debug:');
+  console.log('  Product ID:', productId);
+  console.log('  All products available:', allProducts.length);
+  console.log('  Product:', product);
+  console.log('  Product structure:', JSON.stringify(product, null, 2));
+  console.log('  Current cart:', cart);
+  
+  if (!product) {
+    console.log('  ❌ Product not found!');
+    alert('❌ هذا المنتج غير موجود في النظام');
+    return;
+  }
+  
+  if (product.quantity  <= 0) {
+    console.log('  ❌ Product out of stock!');
     alert('❌ هذا المنتج غير متوفر في المخزون');
     return;
   }
 
   const existingItem = cart.find(item => item.product_id === productId);
+  console.log('  Existing item:', existingItem);
   
   if (existingItem) {
+    console.log('  Product stock (sale_price):', product.sale_price);
+    console.log('  Product quantity:', product.quantity);
+    console.log('  Existing item stock:', existingItem.quantity);
+    console.log('  Product sale_price:', product.sale_price);
+    
     if (existingItem.quantity < product.quantity) {
-      existingItem.quantity++;
-      existingItem.total = existingItem.quantity * existingItem.price;
-    } else {
-      alert('❌ الكمية المطلوبة غير متوفرة في المخزون');
-      return;
-    }
+  existingItem.quantity++;
+  existingItem.total = existingItem.quantity * existingItem.price;
+} else {
+  alert('❌ الكمية المطلوبة غير متوفرة في المخزون');
+  return;
+}
   } else {
-    cart.push({
+    const newItem = {
       product_id: productId,
       product_name: product.name,
       quantity: 1,
       price: product.sale_price,
       total: product.sale_price
-    });
+    };
+    console.log('  ✅ New item created:', newItem);
+    cart.push(newItem);
   }
 
   updateCart();
@@ -424,6 +447,9 @@ function updateCart() {
   const cartTotal = document.getElementById("cartTotal");
   const cartActions = document.getElementById("cartActions");
   const totalAmount = document.getElementById("totalAmount");
+
+  console.log('🛒 updateCart() Debug:');
+  console.log('  Cart items:', cart);
 
   if (cart.length === 0) {
     cartContent.innerHTML = `
@@ -441,7 +467,12 @@ function updateCart() {
   let total = 0;
 
   cart.forEach((item, index) => {
-    total += item.total;
+    console.log(`  Item ${index}:`, item);
+    console.log(`    - Name: ${item.product_name}`);
+    console.log(`    - Price: ${item.sale_price}`);
+    console.log(`    - Quantity: ${item.quantity}`);
+    console.log(`    - Total: ${item.total}`);
+    total += (parseFloat(item.price) || 0) * (parseInt(item.quantity) || 0);
     cartHTML += `
       <div class="cart-item">
         <div class="cart-item-info">
@@ -458,6 +489,9 @@ function updateCart() {
     `;
   });
 
+  console.log('  Calculated total:', total);
+  console.log('  Formatted total:', formatPrice(total));
+
   cartContent.innerHTML = cartHTML;
   totalAmount.textContent = formatPrice(total);
   cartTotal.style.display = "block";
@@ -468,7 +502,14 @@ function updateQuantity(index, change) {
   const item = cart[index];
   const product = allProducts.find(p => p.id === item.product_id);
   
+  console.log('🛒 Cart Update Debug:');
+  console.log('  Item:', item);
+  console.log('  Product:', product);
+  console.log('  Current quantity:', item.quantity);
+  console.log('  Change:', change);
+  
   const newQuantity = item.quantity + change;
+  console.log('  New quantity:', newQuantity);
   
   if (newQuantity <= 0) {
     removeFromCart(index);
@@ -482,6 +523,8 @@ function updateQuantity(index, change) {
   
   item.quantity = newQuantity;
   item.total = item.quantity * item.price;
+  console.log('  New item total:', item.total);
+  
   updateCart();
 }
 
@@ -674,7 +717,7 @@ function viewInvoiceDetails(invoiceId) {
         طباعة الفاتورة
       </button>
       <button onclick="closeInvoiceModal()" 
-              style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
+              style="background: linear-gradient(135deg, #c52323  0%, #c22f43  30%); 
                      color: white; border: none; padding: 12px 24px; border-radius: 8px; 
                      cursor: pointer; font-weight: 600; font-size: 14px; 
                      box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
