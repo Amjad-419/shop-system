@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="icon" href="data:,">
+  <title>نقطة البيع - POS System</title>
+    <link rel="stylesheet" href="style.css">
+  <script src="currency.js"></script>
+  </head>
+
+<body>
+
+<div class="navigation">
+  <div class="header-content" style="justify-content: center; margin-bottom: 15px;">
+        <h2 style="margin: 0;">🏪 نظام نقطة البيع</h2>
+  </div>
+  <div class="nav-buttons">
+    <a href="index.html" class="nav-btn">📦 إدارة المنتجات</a>
+    <a href="pos.html" class="nav-btn active">💰 نقطة البيع</a>
+    <a href="invoices.html" class="nav-btn">🧾 الفواتير</a>
+  </div>
+</div>
+
+<div class="pos-container">
+  
+  <!-- قسم المنتجات -->
+  <div class="products-section">
+    <h3>🛍️ المنتجات</h3>
+    <input type="text" class="search-box" id="searchBox" placeholder="🔍 البحث عن منتج..." oninput="searchProducts()">
+    <div class="product-grid" id="productGrid">
+      <!-- سيتم ملؤها بواسطة JavaScript -->
+    </div>
+  </div>
+  
+  <!-- قسم السلة -->
+  <div class="cart-section">
+    <h3>🛒 سلة المشتريات</h3>
+    
+    <div id="cartContent">
+      <div class="empty-cart">
+        <h4>السلة فارغة</h4>
+        <p>اختر منتجات لإضافتها للسلة</p>
+      </div>
+    </div>
+    
+    <div class="cart-total" id="cartTotal" style="display: none;">
+      الإجمالي: <span id="totalAmount">0.00</span> <span class="currency-symbol"></span>
+    </div>
+    
+    <div class="cart-actions" id="cartActions" style="display: none;">
+      <button class="btn btn-danger" onclick="clearCart()">🗑️ تفريغ السلة</button>
+      <button class="btn btn-secondary" onclick="holdSale()">⏸️ تعليق البيع</button>
+      <button class="btn btn-primary" onclick="checkout()">💳 إتمام البيع</button>
+    </div>
+  </div>
+  
+</div>
+
+<!-- Notification Container -->
+<div id="notificationContainer" style="position: fixed; top: 20px; left: 20px; z-index: 2000; pointer-events: none;"></div>
+
+<!-- Loading Overlay -->
+<div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.8); z-index: 1500; justify-content: center; align-items: center;">
+  <div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); text-align: center;">
+    <div style="font-size: 24px; margin-bottom: 10px;">⏳</div>
+    <div id="loadingText">جاري التحميل...</div>
+  </div>
+</div>
+
+
+<script src="pos.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="icon" href="data:,">
+  <title>فاتورة</title>
+  <style type="text/css">
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Times New Roman', serif;
+      background: #e0e0e0;
+      padding: 20px;
+      direction: rtl;
+    }
+    
+    .pdf-document {
+      background: white;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 20mm;
+      box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      position: relative;
+    }
+    
+    .pdf-header {
+      margin-bottom: 30px;
+      border-bottom: 2px solid #000;
+      padding-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .company-name {
+      font-size: 20px;
+      font-weight: bold;
+      color: #000;
+      margin-bottom: 5px;
+    }
+    
+    .company-address {
+      font-size: 12px;
+      color: #333;
+      margin-bottom: 15px;
+    }
+    
+    .invoice-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #000;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    
+    .company-info {
+      text-align: right;
+    }
+    
+    .invoice-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+      padding: 15px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+    }
+    
+    .info-item {
+      text-align: center;
+    }
+    
+    .info-label {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 3px;
+      text-transform: uppercase;
+    }
+    
+    .info-value {
+      font-size: 14px;
+      font-weight: bold;
+      color: #000;
+    }
+    
+    .items-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 30px;
+      font-size: 12px;
+    }
+    
+    .items-table th {
+      background: #333;
+      color: white;
+      padding: 10px;
+      text-align: center;
+      font-weight: bold;
+      border: 1px solid #000;
+    }
+    
+    .items-table td {
+      padding: 8px;
+      text-align: center;
+      border: 1px solid #000;
+      vertical-align: middle;
+    }
+    
+    .items-table tr:nth-child(even) {
+      background: #f5f5f5;
+    }
+    
+    .total-section {
+      text-align: left;
+      margin-top: 30px;
+      padding: 15px;
+      border: 2px solid #000;
+      background: #f9f9f9;
+    }
+    
+    .total-label {
+      font-size: 14px;
+      color: #333;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    .total-amount {
+      font-size: 24px;
+      font-weight: bold;
+      color: #000;
+    }
+    
+    .action-buttons {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      display: flex;
+      gap: 10px;
+      z-index: 1000;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      transition: all 0.3s;
+    }
+    
+    .btn-print {
+      background: #2196F3;
+      color: white;
+    }
+    
+    .btn-print:hover {
+      background: #1976D2;
+    }
+    
+    .btn-cancel {
+      background: #f44336;
+      color: white;
+    }
+    
+    .btn-cancel:hover {
+      background: #d32f2f;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .error {
+      text-align: center;
+      padding: 40px;
+      color: #d32f2f;
+      font-size: 14px;
+    }
+    
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+        margin: 0;
+        size: A4;
+      }
+      
+      .pdf-document {
+        box-shadow: none;
+        margin: 0;
+        padding: 10mm;
+        max-width: 100%;
+        width: 100%;
+        min-height: auto !important;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+      }
+      
+      .action-buttons {
+        display: none !important;
+      }
+      
+      .company-name { font-size: 16px; }
+      .company-address { font-size: 12px; }
+      .invoice-title { font-size: 18px; }
+      .info-value { font-size: 11px; }
+      .total-amount { font-size: 16px; }
+      .items-table { font-size: 10px; }
+      .items-table th { padding: 6px; }
+      .items-table td { padding: 4px; }
+      
+      html, body {
+        height: auto !important;
+        min-height: auto !important;
+        overflow: visible;
+      }
+      
+      * {
+        page-break-after: auto;
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="pdf-document">
+  <!-- Header -->
+  <div class="pdf-header">
+    <div class="invoice-title">فاتورة</div>
+    <div class="company-info">
+      <div class="company-name">مركز الرحمن للتنمية الزراعية</div>
+      <div class="company-address">القنيطرة، نبع الصخر، الساحة العامة</div>
+      <div class="company-contact">📞 00963-938-838-752</div>
+    </div>
+  </div>
+  
+  <!-- Invoice Info -->
+  <div class="invoice-info">
+    <div class="info-item">
+      <div class="info-label">رقم الفاتورة</div>
+      <div class="info-value" id="invoiceNumber">-</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">التاريخ</div>
+      <div class="info-value" id="invoiceDate">-</div>
+    </div>
+    <div class="info-item">
+      <div class="info-label">الإجمالي</div>
+      <div class="info-value" id="totalAmount">-</div>
+    </div>
+  </div>
+  
+  <!-- Items Table -->
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th>المنتج</th>
+        <th>الكمية</th>
+        <th>السعر</th>
+        <th>الإجمالي</th>
+      </tr>
+    </thead>
+    <tbody id="itemsTableBody">
+      <tr>
+        <td colspan="4" class="loading">جاري تحميل بيانات الفاتورة...</td>
+      </tr>
+    </tbody>
+  </table>
+  
+  <!-- Total Section -->
+  <div class="total-section">
+    <div class="total-label">المبلغ الإجمالي</div>
+    <div class="total-amount" id="grandTotal">-</div>
+  </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="action-buttons">
+  <button class="btn btn-print" onclick="printInvoice()">🖨️ طباعة</button>
+  <button class="btn btn-cancel" onclick="closeWindow()">✖️ إغلاق</button>
+</div>
+
+<script src="currency.js"></script>
+<script>
+// Get invoice ID from URL
+const urlParams = new URLSearchParams(window.location.search);
+const invoiceId = urlParams.get('id');
+
+if (!invoiceId) {
+  document.getElementById('itemsTableBody').innerHTML = '<tr><td colspan="4" class="error">رقم الفاتورة مطلوب</td></tr>';
+} else {
+  loadInvoiceDetails();
+}
+
+async function loadInvoiceDetails() {
+  try {
+    const response = await fetch(`http://localhost:3001/api/invoice/${invoiceId}`);
+    
+    if (!response.ok) {
+      throw new Error('Invoice not found');
+    }
+    
+    const invoice = await response.json();
+    
+    // Update header info
+    document.getElementById('invoiceNumber').textContent = invoice.invoice_number;
+    document.getElementById('invoiceDate').textContent = invoice.created_at ? 
+  (() => {
+    const date = new Date(invoice.created_at);
+    const day = date.getDate();
+    const year = date.getFullYear();
+    const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+    const month = months[date.getMonth()];
+    return `${day} ${month} ${year}`;
+  })() : '-';
+    document.getElementById('totalAmount').textContent = formatPrice(invoice.total_price);
+    document.getElementById('grandTotal').textContent = formatPrice(invoice.total_price);
+    
+    // Update items table
+    const itemsHtml = invoice.items.map(item => {
+      const itemTotal = item.price * item.quantity;
+      return `
+      <tr>
+        <td>${item.name || item.product_name}</td>
+        <td>${item.quantity}</td>
+        <td>${formatPrice(item.price)}</td>
+        <td>${formatPrice(itemTotal)}</td>
+      </tr>
+    `;
+    }).join('');
+    
+    document.getElementById('itemsTableBody').innerHTML = itemsHtml;
+    
+  } catch (error) {
+    console.error('Error loading invoice:', error);
+    document.getElementById('itemsTableBody').innerHTML = '<tr><td colspan="4" class="error">خطأ في تحميل بيانات الفاتورة</td></tr>';
+  }
+}
+
+function printInvoice() {
+  // Get invoice number for filename
+  const invoiceNumber = document.getElementById('invoiceNumber').textContent;
+  const filename = invoiceNumber && invoiceNumber !== '-' ? `${invoiceNumber}.pdf` : 'Rechnung.pdf';
+  
+  // Use window.print with title override
+  const originalTitle = document.title;
+  document.title = filename;
+  
+  window.print();
+  
+  // Restore original title after print dialog closes
+  setTimeout(() => {
+    document.title = originalTitle;
+  }, 1000);
+}
+
+function closeWindow() {
+  window.close();
+}
+</script>
+
+</body>
+</html>

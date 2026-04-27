@@ -1,0 +1,20 @@
+{
+  "name": "shop-system",
+  "version": "1.0.0",
+  "description": "Shop-Management-System",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "shop",
+    "management"
+  ],
+  "author": "Shop-System",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "mysql2": "^3.22.2",
+    "node-fetch": "^3.3.2"
+  }
+}

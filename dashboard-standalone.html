@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <link rel="icon" href="data:,">
+  <title> لوحة التحكم - نظام إدارة المتجر</title>
+    <link rel="stylesheet" href="style.css">
+  <script src="currency.js"></script>
+  <script src="dashboard.js"></script>
+  <style>
+    /* Dashboard specific styles */
+    .form-group {
+      font-size: 14px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid rgba(76, 175, 80, 0.3);
+      border-radius: 12px;
+      font-size: 15px;
+      transition: all 0.3s ease;
+      background: white;
+      color: #1a1a1a;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+    }
+
+    .form-input::placeholder {
+      color: #999;
+    }
+
+    .form-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 25px;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+    }
+
+    .btn-secondary {
+      background: white;
+      color: #1a1a1a;
+      border: 2px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(76, 175, 80, 0.1);
+    }
+
+    /* Additional dashboard styles */
+    .currency-info-wrapper {
+      text-align: center;
+      margin: 20px 0;
+    }
+
+    .currency-info-wrapper h3 {
+      color: #4CAF50;
+      margin-bottom: 10px;
+    }
+
+    .page-content {
+      display: none;
+    }
+
+    .page-content.active {
+      display: block;
+    }
+
+    .connection-status {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 10px 20px;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 1000;
+    }
+
+    .status-connected {
+      background: #e8f5e8;
+      color: #4CAF50;
+    }
+
+    .status-disconnected {
+      background: #ffeaea;
+      color: #f44336;
+    }
+
+    /* Empty state styles */
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+
+    .empty-state h3 {
+      margin-bottom: 10px;
+      color: #999;
+    }
+
+    /* Action buttons */
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-edit, .btn-delete {
+      padding: 6px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-edit {
+      background: #0ca744;
+      color: white;
+    }
+
+    .btn-edit:hover {
+      background: #058b36;
+    }
+
+    .btn-delete {
+      background: #f70820;
+      color: white;
+    }
+
+    .btn-delete:hover {
+      background: #bf1526;
+    }
+
+    /* Stock badge */
+    .stock-badge {
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .stock-high {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .stock-medium {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .stock-low {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    /* POS specific styles */
+    .quantity-selector {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 10px 0;
+    }
+
+    .quantity-btn {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #ddd;
+      background: white;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+      font-size: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .quantity-btn:hover {
+      background: #f8f9fa;
+      border-color: #36b00d;
+    }
+
+    .quantity-btn:active {
+      transform: scale(0.95);
+    }
+
+    .quantity-input {
+      width: 50px;
+      text-align: center;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 5px;
+    }
+
+    .cart-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+    }
+
+    .cart-item-info {
+      flex: 1;
+    }
+
+    .cart-item-name {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .cart-item-price {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .cart-item-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .btn-remove {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .cart-item-quantity {
+      font-weight: 600;
+      min-width: 20px;
+      text-align: center;
+    }
+
+    /* Invoice modal styles */
+    .invoice-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .invoice-modal-content {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .invoice-modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .invoice-info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px;
+      background: #f8f9fa;
+      border-radius: 5px;
+    }
+
+    .info-label {
+      font-weight: 600;
+      color: #666;
+    }
+
+    .info-value {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .invoice-items-list {
+      margin: 20px 0;
+    }
+
+    .invoice-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px;
+      background: #f8f9fa;
+      border-radius: 5px;
+      margin-bottom: 10px;
+    }
+
+    .item-info {
+      flex: 1;
+    }
+
+    .item-name {
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .item-details {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .item-quantity {
+      margin-left: 10px;
+    }
+
+    .item-total {
+      font-weight: bold;
+      color: #333;
+    }
+
+    .invoice-summary {
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 2px solid #eee;
+    }
+
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .summary-item.total {
+      font-size: 18px;
+      font-weight: bold;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="nav-container">
+    <div class="nav-header">
+      <div class="header-content">
+                <h1>🏪 لوحة التحكم</h1>
+      </div>
+      <p>نظام إدارة متجر شامل - جميع الأقسام في مكان واحد</p>
+    </div>
+
+    <div class="nav-tabs">
+      <a href="#" class="nav-tab active" data-page="products" onclick="showPage('products')">
+        <div class="nav-tab-icon">📦</div>
+        <div class="nav-tab-title">إدارة المنتجات</div>
+        <div class="nav-tab-description">إضافة وتعديل المنتجات</div>
+      </a>
+      <a href="#" class="nav-tab" data-page="pos" onclick="showPage('pos')">
+        <div class="nav-tab-icon">💰</div>
+        <div class="nav-tab-title">نقطة البيع</div>
+        <div class="nav-tab-description">إجراء عمليات البيع</div>
+      </a>
+      <a href="#" class="nav-tab" data-page="invoices" onclick="showPage('invoices')">
+        <div class="nav-tab-icon">🧾</div>
+        <div class="nav-tab-title">الفواتير</div>
+        <div class="nav-tab-description">عرض وإدارة الفواتير</div>
+      </a>
+    </div>
+  </div>
+
+  <div class="content-container">
+    <div class="content-header">
+      <h2 class="content-title" id="pageTitle">📦 إدارة المنتجات</h2>
+      <div class="content-actions">
+        <button class="btn-small btn-refresh" onclick="refreshCurrentPage()">🔄 تحديث</button>
+      </div>
+    </div>
+
+    <!-- Products Page -->
+    <div id="productsPage" class="page-content active">
+      <div class="main-content">
+        <!-- Products Form Section -->
+        <div class="products-form-section">
+          <div class="form-header">
+            <h2 id="formTitle">➕ إضافة منتج جديد</h2>
+            <div class="form-icon">📦</div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="name">📝 اسم المنتج</label>
+              <input type="text" id="name" class="form-input" placeholder="أدخل اسم المنتج">
+            </div>
+
+            <div class="form-group">
+              <label for="category">📂 الفئة</label>
+              <input type="text" id="category" class="form-input" placeholder="أدخل فئة المنتج">
+            </div>
+
+            <div class="form-group">
+              <label for="purchase">💰 سعر الشراء</label>
+              <input type="number" id="purchase" class="form-input" placeholder="سعر الشراء" step="0.01">
+            </div>
+
+            <div class="form-group">
+              <label for="sale">💵 سعر البيع</label>
+              <input type="number" id="sale" class="form-input" placeholder="سعر البيع" step="0.01">
+            </div>
+
+            <div class="form-group">
+              <label for="qty">📦 الكمية</label>
+              <input type="number" id="qty" class="form-input" placeholder="الكمية المتوفرة">
+            </div>
+          </div>
+
+          <div class="form-buttons">
+            <button class="btn btn-primary" onclick="saveProduct()">💾 حفظ المنتج</button>
+            <button class="btn btn-secondary" onclick="clearInputs()">🔄 مسح الحقول</button>
+          </div>
+        </div>
+
+        <!-- Products Table Section -->
+        <div>
+          <div class="content-header">
+            <h3>📋 قائمة المنتجات</h3>
+            <div class="content-actions">
+              <input type="text" id="search" placeholder="🔍 البحث عن منتج..." style="padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+              <span id="productCount">0 منتج</span>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>📝 اسم المنتج</th>
+                <th>📂 الفئة</th>
+                <th>💰 سعر الشراء</th>
+                <th>💵 سعر البيع</th>
+                <th>📦 الكمية</th>
+                <th>⚙️ الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <tr>
+                <td colspan="6">
+                  <div class="empty-state">
+                    <h3>📦 جاري التحميل...</h3>
+                    <p>يتم تحميل المنتجات من قاعدة البيانات</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- POS Page -->
+    <div id="posPage" class="page-content">
+      <div class="pos-container">
+        <!-- Products Section -->
+        <div class="products-section">
+          <h3>🛍️ المنتجات</h3>
+          <input type="text" class="search-box" id="searchBox" placeholder="🔍 البحث عن منتج..." oninput="searchPOSProducts()">
+          <div class="product-grid" id="productGrid">
+            <div class="empty-state">
+              <h3>📦 جاري التحميل...</h3>
+              <p>يتم تحميل المنتجات</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Cart Section -->
+        <div class="cart-section">
+          <h3>🛒 سلة المشتريات</h3>
+          
+          <div id="cartContent">
+            <div class="empty-cart">
+              <h4>السلة فارغة</h4>
+              <p>اختر منتجات لإضافتها للسلة</p>
+            </div>
+          </div>
+          
+          <div class="cart-total" id="cartTotal" style="display: none;">
+            الإجمالي: <span id="totalAmount">0.00</span>
+          </div>
+          
+          <div class="cart-actions" id="cartActions" style="display: none;">
+            <button class="btn btn-danger" onclick="clearCart()">🗑️ تفريغ السلة</button>
+            <button class="btn btn-secondary" onclick="holdSale()">⏸️ تعليق البيع</button>
+            <button class="btn btn-primary" onclick="checkout()">💳 إتمام البيع</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Invoices Page -->
+    <div id="invoicesPage" class="page-content">
+      <div class="content-header">
+        <h3>🧾 سجل الفواتير</h3>
+        <div class="content-actions">
+          <button class="btn-small btn-primary" onclick="loadInvoices()">🔄 تحديث</button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>🔢 رقم الفاتورة</th>
+            <th>📅 التاريخ</th>
+            <th>💰 المجموع</th>
+            <th>📦 عدد المنتجات</th>
+            <th>⚙️ الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="invoicesTableBody">
+          <tr>
+            <td colspan="5">
+              <div class="empty-state">
+                <h3>🧾 جاري التحميل...</h3>
+                <p>يتم تحميل الفواتير</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Stats Section -->
+  <div class="stats-row">
+    <div class="stat-card-mini">
+      <div class="stat-number-mini" id="totalProducts">0</div>
+      <div class="stat-label-mini">إجمالي المنتجات</div>
+    </div>
+    <div class="stat-card-mini">
+      <div class="stat-number-mini" id="totalStock">0</div>
+      <div class="stat-label-mini">إجمالي المخزون</div>
+    </div>
+    <div class="stat-card-mini">
+      <div class="stat-number-mini" id="totalValue">0</div>
+      <div class="stat-label-mini">قيمة المخزون</div>
+    </div>
+    <div class="stat-card-mini">
+      <div class="stat-number-mini" id="lowStock">0</div>
+      <div class="stat-label-mini">منخفض المخزون</div>
+    </div>
+  </div>
+</div>
+
+<!-- Invoice Modal -->
+<div id="invoiceModal" class="invoice-modal">
+  <div class="invoice-modal-content">
+    <div class="invoice-modal-header">
+      <h3>📄 تفاصيل الفاتورة</h3>
+    </div>
+    <div class="invoice-modal-body">
+      <div id="modalInvoiceInfo"></div>
+      <div id="modalInvoiceItems"></div>
+      <div id="modalInvoiceSummary"></div>
+      <div class="invoice-actions">
+        <button class="btn btn-primary" onclick="printInvoice()">🖨 طباعة</button>
+        <button class="btn btn-secondary" onclick="closeInvoiceModal()">إغلاق</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Connection Status -->
+<div class="connection-status status-disconnected" id="connectionStatus">
+  🔌 منقطع الاتصال
+</div>
+
+</body>
+</html>
