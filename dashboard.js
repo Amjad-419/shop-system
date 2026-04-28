@@ -391,29 +391,58 @@ function displayPOSProducts(productList) {
 
 function addToCart(productId) {
   const product = allProducts.find(p => p.id === productId);
-  if (!product || product.quantity <= 0) {
+  
+  console.log('🛒 addToCart() Debug:');
+  console.log('  Product ID:', productId);
+  console.log('  All products available:', allProducts.length);
+  console.log('  Product:', product);
+  console.log('  Product structure:', JSON.stringify(product, null, 2));
+  console.log('  Current cart:', cart);
+  
+  if (!product) {
+    console.log('  ❌ Product not found!');
+    alert('❌ هذا المنتج غير موجود في النظام');
+    return;
+  }
+  
+  if (product.quantity <= 0) {
+    console.log('  ❌ Product out of stock!');
     alert('❌ هذا المنتج غير متوفر في المخزون');
     return;
   }
 
   const existingItem = cart.find(item => item.product_id === productId);
+  console.log('  Existing item:', existingItem);
   
   if (existingItem) {
+    console.log('  Product stock (quantity):', product.quantity);
+    console.log('  Existing item quantity:', existingItem.quantity);
+    
     if (existingItem.quantity < product.quantity) {
       existingItem.quantity++;
-      existingItem.total = existingItem.quantity * existingItem.price;
+      // Einfache Preisberechnung: verwende gespeicherten Preis
+      const price = parseFloat(existingItem.price) || parseFloat(product.sale_price) || 0;
+      existingItem.total = price * existingItem.quantity;
+      console.log('  ✅ Item quantity updated:', existingItem.quantity);
+      console.log('  ✅ New total:', existingItem.total);
     } else {
+      console.log('  ❌ Insufficient stock');
       alert('❌ الكمية المطلوبة غير متوفرة في المخزون');
       return;
     }
   } else {
-    cart.push({
+    // Einfache Preis-Initialisierung
+    const price = parseFloat(product.sale_price) || 0;
+    const quantity = 1;
+    const newItem = {
       product_id: productId,
       product_name: product.name,
-      quantity: 1,
-      price: product.sale_price,
-      total: product.sale_price
-    });
+      quantity: quantity,
+      price: price,
+      total: price * quantity
+    };
+    console.log('  ✅ New item created:', newItem);
+    cart.push(newItem);
   }
 
   updateCart();
@@ -424,6 +453,9 @@ function updateCart() {
   const cartTotal = document.getElementById("cartTotal");
   const cartActions = document.getElementById("cartActions");
   const totalAmount = document.getElementById("totalAmount");
+
+  console.log('🛒 updateCart() Debug:');
+  console.log('  Cart items:', cart);
 
   if (cart.length === 0) {
     cartContent.innerHTML = `
@@ -441,22 +473,50 @@ function updateCart() {
   let total = 0;
 
   cart.forEach((item, index) => {
-    total += item.total;
+    // Verwende gespeicherten item.total direkt mit Validierung
+    let itemTotal = 0;
+    if (item.total !== null && item.total !== undefined && item.total !== '') {
+      const totalStr = String(item.total).replace(',', '.');
+      itemTotal = parseFloat(totalStr) || 0;
+    }
+    
+    // Zusätzliche Validierung
+    if (isNaN(itemTotal) || !isFinite(itemTotal)) itemTotal = 0;
+    
+    // Debug-Informationen
+    console.log(`  Item ${index}:`, item);
+    console.log(`    - Name: ${item.product_name}`);
+    console.log(`    - Stored item.total: ${item.total} -> Cleaned: ${itemTotal}`);
+    
+    // Gesamtberechnung mit gespeichertem Wert
+    total += Math.round(itemTotal * 100) / 100;
+    
+    // Anzeige-Werte berechnen
+    const displayPrice = item.price || 0;
+    const displayQuantity = item.quantity || 0;
+    
     cartHTML += `
       <div class="cart-item">
         <div class="cart-item-info">
           <div class="cart-item-name">${item.product_name}</div>
-          <div class="cart-item-price">${formatPrice(item.price)} × ${item.quantity}</div>
+          <div class="cart-item-price">${formatPrice(displayPrice)} × ${displayQuantity}</div>
         </div>
         <div class="cart-item-actions">
           <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">-</button>
-          <span class="cart-item-quantity">${item.quantity}</span>
+          <span class="cart-item-quantity">${displayQuantity}</span>
           <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
           <button class="btn-remove" onclick="removeFromCart(${index})">🗑️</button>
         </div>
       </div>
     `;
   });
+
+  // Finale Gesamtberechnung mit Rundung
+  total = Math.round(total * 100) / 100;
+  
+  console.log('  Final calculated total:', total);
+  console.log('  Formatted total:', formatPrice(total));
+  console.log('  Number of cart items:', cart.length);
 
   cartContent.innerHTML = cartHTML;
   totalAmount.textContent = formatPrice(total);
@@ -468,20 +528,44 @@ function updateQuantity(index, change) {
   const item = cart[index];
   const product = allProducts.find(p => p.id === item.product_id);
   
-  const newQuantity = item.quantity + change;
+  console.log('🛒 Cart Update Debug:');
+  console.log('  Item:', item);
+  console.log('  Product:', product);
+  console.log('  Current quantity:', item.quantity);
+  console.log('  Change:', change);
+  
+  // Robuste Mengen-Konvertierung
+  const currentQuantity = parseInt(item.quantity) || 0;
+  const newQuantity = currentQuantity + change;
+  const stockQuantity = parseInt(product.quantity) || 0;
+  
+  console.log('  New quantity:', newQuantity);
+  console.log('  Stock quantity:', stockQuantity);
   
   if (newQuantity <= 0) {
     removeFromCart(index);
     return;
   }
   
-  if (newQuantity > product.quantity) {
-    alert('❌ الكمية المطلوبة غير متوفرة في المخزون');
+  // Robuste Lagerbestands-Prüfung
+  if (newQuantity > stockQuantity) {
+    alert(`❌ الكمية المطلوبة غير متوفرة في المخزون. Verfügbar: ${stockQuantity}, Gewünscht: ${newQuantity}`);
     return;
   }
   
+  // Einfache Preisberechnung
+  const price = parseFloat(item.price) || parseFloat(product.sale_price) || 0;
+  
+  // Update item
   item.quantity = newQuantity;
-  item.total = item.quantity * item.price;
+  item.total = price * newQuantity;
+  
+  console.log('    - Used price:', price);
+  console.log('    - Calculated total:', item.total);
+  
+  console.log('  Updated item:', item);
+  console.log('  New item total:', item.total);
+  
   updateCart();
 }
 
