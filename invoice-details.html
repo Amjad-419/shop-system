@@ -7,6 +7,7 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
+  <meta name="google" content="notranslate">
   <link rel="icon" href="data:,">
   <title>فاتورة</title>
   <style type="text/css">
@@ -97,22 +98,26 @@
       border-collapse: collapse;
       margin-bottom: 30px;
       font-size: 12px;
+      border: 2px solid #000;
+      table-layout: auto;
     }
     
     .items-table th {
       background: #333;
       color: white;
-      padding: 10px;
+      padding: 12px 8px;
       text-align: center;
       font-weight: bold;
       border: 1px solid #000;
+      font-size: 14px;
     }
     
     .items-table td {
-      padding: 8px;
+      padding: 10px 8px;
       text-align: center;
       border: 1px solid #000;
       vertical-align: middle;
+      font-size: 12px;
     }
     
     .items-table tr:nth-child(even) {
@@ -182,56 +187,148 @@
       background: #d32f2f;
     }
     
-    .loading {
+    .loading, .error {
       text-align: center;
       padding: 40px;
-      color: #666;
       font-size: 14px;
     }
     
+    .loading {
+      color: #666;
+    }
+    
     .error {
-      text-align: center;
-      padding: 40px;
       color: #d32f2f;
-      font-size: 14px;
     }
     
     @media print {
       body {
-        background: white;
-        padding: 0;
-        margin: 0;
+        background: white !important;
+        padding: 0 !important;
+        margin: 0 !important;
         size: A4;
+        font-family: 'Times New Roman', serif !important;
+        -webkit-print-color-adjust: exact !important;
+        color-adjust: exact !important;
       }
       
       .pdf-document {
-        box-shadow: none;
-        margin: 0;
-        padding: 10mm;
-        max-width: 100%;
-        width: 100%;
-        min-height: auto !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 15mm !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        min-height: 100vh !important;
+        height: 100vh !important;
         page-break-after: avoid;
         page-break-inside: avoid;
+        position: relative;
       }
       
       .action-buttons {
         display: none !important;
       }
       
-      .company-name { font-size: 16px; }
-      .company-address { font-size: 12px; }
-      .invoice-title { font-size: 18px; }
-      .info-value { font-size: 11px; }
-      .total-amount { font-size: 16px; }
-      .items-table { font-size: 10px; }
-      .items-table th { padding: 6px; }
-      .items-table td { padding: 4px; }
+      .pdf-header {
+        margin-bottom: 15mm !important;
+      }
+      
+      .company-name { 
+        font-size: 18px !important; 
+        font-weight: bold !important;
+        margin-bottom: 3mm !important;
+      }
+      
+      .company-address { 
+        font-size: 12px !important; 
+        margin-bottom: 2mm !important;
+      }
+      
+      .company-contact { 
+        font-size: 11px !important;
+      }
+      
+      .invoice-title { 
+        font-size: 20px !important; 
+        font-weight: bold !important;
+        margin-bottom: 10mm !important;
+        text-align: center !important;
+      }
+      
+      .invoice-info {
+        margin-bottom: 10mm !important;
+      }
+      
+      .info-item {
+        margin-bottom: 3mm !important;
+      }
+      
+      .info-label { 
+        font-size: 11px !important;
+        font-weight: bold !important;
+        color: #333 !important;
+      }
+      
+      .info-value { 
+        font-size: 11px !important;
+        color: #333 !important;
+      }
+      
+      .items-table {
+        width: 100% !important;
+        margin-bottom: 10mm !important;
+        border-collapse: collapse !important;
+        table-layout: fixed !important;
+      }
+      
+      .items-table th { 
+        padding: 8px !important;
+        font-size: 11px !important;
+        font-weight: bold !important;
+        background: #333 !important;
+        color: white !important;
+        border: 1px solid #000 !important;
+        text-align: center !important;
+        width: 25% !important;
+      }
+      
+      .items-table td { 
+        padding: 8px !important;
+        font-size: 10px !important;
+        border: 1px solid #000 !important;
+        vertical-align: middle !important;
+        text-align: center !important;
+        width: 25% !important;
+      }
+      
+      .items-table tr:nth-child(even) {
+        background: #f5f5f5 !important;
+      }
+      
+      .total-section {
+        margin-top: 15mm !important;
+        padding: 10mm !important;
+        border: 2px solid #000 !important;
+        text-align: left !important;
+      }
+      
+      .total-label {
+        font-size: 14px !important;
+        font-weight: bold !important;
+        color: #333 !important;
+        margin-bottom: 5mm !important;
+      }
+      
+      .total-amount { 
+        font-size: 18px !important;
+        font-weight: bold !important;
+        color: #000 !important;
+      }
       
       html, body {
         height: auto !important;
         min-height: auto !important;
-        overflow: visible;
+        overflow: visible !important;
       }
       
       * {
@@ -276,9 +373,9 @@
     <thead>
       <tr>
         <th>المنتج</th>
+        <th>الفئة</th>
         <th>الكمية</th>
         <th>السعر</th>
-        <th>الإجمالي</th>
       </tr>
     </thead>
     <tbody id="itemsTableBody">
@@ -301,7 +398,19 @@
   <button class="btn btn-cancel" onclick="closeWindow()">✖️ إغلاق</button>
 </div>
 
-<script src="currency.js"></script>
+<script>
+  // Format price function (backup)
+  function formatPrice(price) {
+    return new Intl.NumberFormat('ar-SA', {
+      style: 'currency',
+      currency: 'SYP',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(price || 0);
+  }
+</script>
+<script src="invoice-details.js"></script>
+
 <script>
 // Get invoice ID from URL
 const urlParams = new URLSearchParams(window.location.search);
@@ -326,36 +435,41 @@ async function loadInvoiceDetails() {
     // Update header info
     document.getElementById('invoiceNumber').textContent = invoice.invoice_number;
     document.getElementById('invoiceDate').textContent = invoice.created_at ? 
-  (() => {
-    const date = new Date(invoice.created_at);
-    const day = date.getDate();
-    const year = date.getFullYear();
-    const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
-    const month = months[date.getMonth()];
-    return `${day} ${month} ${year}`;
-  })() : '-';
-    document.getElementById('totalAmount').textContent = formatPrice(invoice.total_price);
-    document.getElementById('grandTotal').textContent = formatPrice(invoice.total_price);
+      (() => {
+        const date = new Date(invoice.created_at);
+        const months = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو', 'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+        return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`;
+      })() : '-';
+    
+    const totalPrice = formatPrice(invoice.total_price);
+    document.getElementById('totalAmount').textContent = totalPrice;
+    document.getElementById('grandTotal').textContent = totalPrice;
     
     // Update items table
+    if (!invoice.items || invoice.items.length === 0) {
+      document.getElementById('itemsTableBody').innerHTML = '<tr><td colspan="4" class="error">لا توجد عناصر في هذه الفاتورة</td></tr>';
+      return;
+    }
+    
     const itemsHtml = invoice.items.map(item => {
-      const price = parseFloat(item.price || item.sale_price || item.product_price || 0);
-    const quantity = parseInt(item.quantity || 0);
-const itemTotal = price * quantity;
+      const productName = item.name || item.product_name || 'غير محدد';
+      const category = item.category || '-';
+      const quantity = parseInt(item.quantity || 0);
+      const price = parseFloat(item.price || 0);
+      
       return `
-      <tr>
-        <td>${item.name || item.product_name}</td>
-        <td>${item.quantity}</td>
-        <td>${formatPrice(price)}</td>
-        <td>${formatPrice(itemTotal)}</td>
-      </tr>
-    `;
+        <tr>
+          <td>${productName}</td>
+          <td>${category}</td>
+          <td>${quantity}</td>
+          <td>${formatPrice(price)}</td>
+        </tr>
+      `;
     }).join('');
     
     document.getElementById('itemsTableBody').innerHTML = itemsHtml;
     
   } catch (error) {
-    console.error('Error loading invoice:', error);
     document.getElementById('itemsTableBody').innerHTML = '<tr><td colspan="4" class="error">خطأ في تحميل بيانات الفاتورة</td></tr>';
   }
 }

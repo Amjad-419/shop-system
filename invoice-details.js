@@ -1,6 +1,18 @@
 // ==================== INVOICE DETAILS ====================
 const API = "http://localhost:3001";
 
+// =====================
+// 💰 FORMAT PRICE
+// =====================
+function formatPrice(price) {
+  return new Intl.NumberFormat('ar-SA', {
+    style: 'currency',
+    currency: 'SYP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(price || 0);
+}
+
 // 🔹 استخراج ID من الرابط
 const params = new URLSearchParams(window.location.search);
 const id = params.get("id");
