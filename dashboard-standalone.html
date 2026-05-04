@@ -4,13 +4,13 @@
   <meta charset="UTF-8">
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="google" content="notranslate">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <link rel="icon" href="data:,">
   <title> لوحة التحكم - نظام إدارة المتجر</title>
     <link rel="stylesheet" href="style.css">
-  <script src="currency.js"></script>
   <script src="dashboard.js"></script>
   <style>
     /* Dashboard specific styles */
@@ -21,7 +21,7 @@
     .form-input {
       width: 100%;
       padding: 12px 16px;
-      border: 2px solid rgba(76, 175, 80, 0.3);
+      border: 2px solid rgba(59, 130, 246, 0.2);
       border-radius: 12px;
       font-size: 15px;
       transition: all 0.3s ease;
@@ -31,8 +31,8 @@
 
     .form-input:focus {
       outline: none;
-      border-color: #4CAF50;
-      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.2);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
     }
 
     .form-input::placeholder {
@@ -57,23 +57,23 @@
     }
 
     .btn-primary {
-      background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 100%);
+      background: linear-gradient(135deg, #3b82f6 0%, #60a5fa 100%);
       color: white;
     }
 
     .btn-primary:hover {
       transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(76, 175, 80, 0.3);
+      box-shadow: 0 8px 25px rgba(59, 130, 246, 0.3);
     }
 
     .btn-secondary {
       background: white;
       color: #1a1a1a;
-      border: 2px solid rgba(76, 175, 80, 0.3);
+      border: 2px solid rgba(59, 130, 246, 0.2);
     }
 
     .btn-secondary:hover {
-      background: rgba(76, 175, 80, 0.1);
+      background: rgba(59, 130, 246, 0.1);
     }
 
     /* Additional dashboard styles */
@@ -83,7 +83,7 @@
     }
 
     .currency-info-wrapper h3 {
-      color: #4CAF50;
+      color: #3b82f6;
       margin-bottom: 10px;
     }
 
@@ -107,8 +107,8 @@
     }
 
     .status-connected {
-      background: #e8f5e8;
-      color: #4CAF50;
+      background: #e0f2fe;
+      color: #3b82f6;
     }
 
     .status-disconnected {
@@ -145,12 +145,12 @@
     }
 
     .btn-edit {
-      background: #0ca744;
+      background: #3b82f6;
       color: white;
     }
 
     .btn-edit:hover {
-      background: #058b36;
+      background: #2563eb;
     }
 
     .btn-delete {
@@ -211,7 +211,7 @@
 
     .quantity-btn:hover {
       background: #f8f9fa;
-      border-color: #36b00d;
+      border-color: #3b82f6;
     }
 
     .quantity-btn:active {
@@ -395,35 +395,60 @@
 </head>
 <body>
 
-<div class="container">
-  <div class="nav-container">
-    <div class="nav-header">
-      <div class="header-content">
-                <h1>🏪 لوحة التحكم</h1>
+<div class="dashboard-layout">
+  <!-- Sidebar Navigation -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">🏪</span>
+        <span class="logo-text">لوحة التحكم</span>
       </div>
-      <p>نظام إدارة متجر شامل - جميع الأقسام في مكان واحد</p>
+      <p class="sidebar-subtitle">نظام إدارة المتجر</p>
     </div>
 
-    <div class="nav-tabs">
-      <a href="#" class="nav-tab active" data-page="products" onclick="showPage('products')">
-        <div class="nav-tab-icon">📦</div>
-        <div class="nav-tab-title">إدارة المنتجات</div>
-        <div class="nav-tab-description">إضافة وتعديل المنتجات</div>
+    <nav class="sidebar-nav">
+      <a href="#" class="nav-item active" data-page="products" onclick="showPage('products')">
+        <span class="nav-icon">📦</span>
+        <span class="nav-text">إدارة المنتجات</span>
+        <span class="nav-arrow">‹</span>
       </a>
-      <a href="#" class="nav-tab" data-page="pos" onclick="showPage('pos')">
-        <div class="nav-tab-icon">💰</div>
-        <div class="nav-tab-title">نقطة البيع</div>
-        <div class="nav-tab-description">إجراء عمليات البيع</div>
+      <a href="#" class="nav-item" data-page="pos" onclick="showPage('pos')">
+        <span class="nav-icon">💰</span>
+        <span class="nav-text">نقطة البيع</span>
+        <span class="nav-arrow">‹</span>
       </a>
-      <a href="#" class="nav-tab" data-page="invoices" onclick="showPage('invoices')">
-        <div class="nav-tab-icon">🧾</div>
-        <div class="nav-tab-title">الفواتير</div>
-        <div class="nav-tab-description">عرض وإدارة الفواتير</div>
+      <a href="#" class="nav-item" data-page="invoices" onclick="showPage('invoices')">
+        <span class="nav-icon">🧾</span>
+        <span class="nav-text">الفواتير</span>
+        <span class="nav-arrow">‹</span>
       </a>
-    </div>
-  </div>
+      <a href="#" class="nav-item" data-page="suppliers" onclick="showPage('suppliers')">
+        <span class="nav-icon">🏢</span>
+        <span class="nav-text">الشركات والموردون</span>
+        <span class="nav-arrow">‹</span>
+      </a>
+      <a href="#" class="nav-item" data-page="customers" onclick="showPage('customers')">
+        <span class="nav-icon">👥</span>
+        <span class="nav-text">الزبائن</span>
+        <span class="nav-arrow">‹</span>
+      </a>
+    </nav>
 
-  <div class="content-container">
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="user-avatar">👤</div>
+        <div class="user-details">
+          <span class="user-name">المدير</span>
+          <span class="user-role">مسؤول النظام</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    <div class="container">
+      <div class="content-container">
     <div class="content-header">
       <h2 class="content-title" id="pageTitle">📦 إدارة المنتجات</h2>
       <div class="content-actions">
@@ -433,15 +458,15 @@
 
     <!-- Products Page -->
     <div id="productsPage" class="page-content active">
-      <div class="main-content">
-        <!-- Products Form Section -->
+      <div class="products-layout">
+        <!-- Products Form Section - Top -->
         <div class="products-form-section">
           <div class="form-header">
             <h2 id="formTitle">➕ إضافة منتج جديد</h2>
             <div class="form-icon">📦</div>
           </div>
 
-          <div class="form-grid">
+          <div class="form-grid-modern">
             <div class="form-group">
               <label for="name">📝 اسم المنتج</label>
               <input type="text" id="name" class="form-input" placeholder="أدخل اسم المنتج">
@@ -449,7 +474,28 @@
 
             <div class="form-group">
               <label for="category">📂 الفئة</label>
-              <input type="text" id="category" class="form-input" placeholder="أدخل فئة المنتج">
+              <select id="category" class="form-input form-select">
+                <option value="">-- اختر الفئة --</option>
+                <option value="بذور">بذور</option>
+                <option value="مبيدات حشرية">مبيدات حشرية</option>
+                <option value="مبيدات فطرية">مبيدات فطرية</option>
+                <option value="مبيدات أعشاب">مبيدات أعشاب</option>
+                <option value="أسمدة عضوية">أسمدة عضوية</option>
+                <option value="أسمدة كيميائية">أسمدة كيميائية</option>
+                <option value="أدوات زراعية">أدوات زراعية</option>
+                <option value="شبكات ري">شبكات ري</option>
+                <option value="بلاستيك زراعي">بلاستيك زراعي</option>
+                <option value="منظمات نمو">منظمات نمو</option>
+                <option value="أخرى">أخرى</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="supplier">🏢 الشركة / المورد</label>
+              <select id="supplier" class="form-input form-select">
+                <option value="">-- اختر الشركة --</option>
+                <option value="غير مسجل">غير مسجل</option>
+              </select>
             </div>
 
             <div class="form-group">
@@ -466,6 +512,25 @@
               <label for="qty">📦 الكمية</label>
               <input type="number" id="qty" class="form-input" placeholder="الكمية المتوفرة">
             </div>
+
+            <div class="form-group">
+              <label for="capacity">⚖️ السعة</label>
+              <input type="number" id="capacity" class="form-input" placeholder="السعة (مثال: 1، 0.5، 2)" step="0.01">
+            </div>
+
+            <div class="form-group">
+              <label for="unit">📏 وحدة القياس</label>
+              <select id="unit" class="form-input form-select">
+                <option value="قطعة">قطعة</option>
+                <option value="لتر">لتر</option>
+                <option value="جرام">جرام</option>
+                <option value="كيلو جرام">كيلو جرام</option>
+                <option value="متر">متر</option>
+                <option value="كيلو متر">كيلو متر</option>
+                <option value="صندوق">صندوق</option>
+                <option value="عبوة">عبوة</option>
+              </select>
+            </div>
           </div>
 
           <div class="form-buttons">
@@ -474,8 +539,8 @@
           </div>
         </div>
 
-        <!-- Products Table Section -->
-        <div>
+        <!-- Products Table Section - Bottom -->
+        <div class="products-table-section">
           <div class="content-header">
             <h3>📋 قائمة المنتجات</h3>
             <div class="content-actions">
@@ -489,15 +554,18 @@
               <tr>
                 <th>📝 اسم المنتج</th>
                 <th>📂 الفئة</th>
+                <th>🏢 الشركة/المورد</th>
                 <th>💰 سعر الشراء</th>
                 <th>💵 سعر البيع</th>
                 <th>📦 الكمية</th>
+                <th>⚖️ السعة</th>
+                <th>📏 الوحدة</th>
                 <th>⚙️ الإجراءات</th>
               </tr>
             </thead>
             <tbody id="tableBody">
               <tr>
-                <td colspan="6">
+                <td colspan="9">
                   <div class="empty-state">
                     <h3>📦 جاري التحميل...</h3>
                     <p>يتم تحميل المنتجات من قاعدة البيانات</p>
@@ -563,7 +631,7 @@
           <tr>
             <th>🔢 رقم الفاتورة</th>
             <th>📅 التاريخ</th>
-            <th>💰 المجموع</th>
+            <th>� المجموع</th>
             <th>📦 عدد المنتجات</th>
             <th>⚙️ الإجراءات</th>
           </tr>
@@ -580,25 +648,171 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Suppliers Page -->
+    <div id="suppliersPage" class="page-content">
+      <div class="content-header">
+        <h3>🏢 إدارة الشركات والموردين</h3>
+        <div class="content-actions">
+          <button class="btn-small btn-primary" onclick="showAddSupplierModal()">➕ إضافة شركة</button>
+        </div>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>🏢 اسم الشركة</th>
+            <th>📞 رقم الهاتف</th>
+            <th>📧 البريد الإلكتروني</th>
+            <th>📍 العنوان</th>
+            <th>📦 عدد المنتجات</th>
+            <th>⚙️ الإجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="suppliersTableBody">
+          <tr>
+            <td colspan="6">
+              <div class="empty-state">
+                <h3>🏢 جاري تحميل الشركات...</h3>
+                <p>يتم تحميل قائمة الشركات والموردين</p>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- Stats Section -->
-  <div class="stats-row">
-    <div class="stat-card-mini">
-      <div class="stat-number-mini" id="totalProducts">0</div>
-      <div class="stat-label-mini">إجمالي المنتجات</div>
+    <!-- Customers Page -->
+    <div id="customersPage" class="page-content">
+      <div class="customers-layout">
+        <!-- Customers Form Section - Top -->
+        <div class="customers-form-section">
+          <div class="form-header">
+            <h2 id="customerFormTitle">➕ إضافة زبون جديد</h2>
+            <div class="form-icon">👥</div>
+          </div>
+
+          <div class="form-grid-modern">
+            <div class="form-group">
+              <label for="customerName">👥 اسم الزبون</label>
+              <input type="text" id="customerName" class="form-input" placeholder="أدخل اسم الزبون">
+            </div>
+
+            <div class="form-group">
+              <label for="customerPhone">📞 رقم الهاتف</label>
+              <input type="text" id="customerPhone" class="form-input" placeholder="أدخل رقم الهاتف">
+            </div>
+
+            <div class="form-group">
+              <label for="customerEmail">📧 البريد الإلكتروني</label>
+              <input type="email" id="customerEmail" class="form-input" placeholder="أدخل البريد الإلكتروني">
+            </div>
+
+            <div class="form-group">
+              <label for="customerAddress">📍 العنوان</label>
+              <input type="text" id="customerAddress" class="form-input" placeholder="أدخل العنوان">
+            </div>
+          </div>
+
+          <div class="form-buttons">
+            <button class="btn btn-primary" onclick="saveCustomer()">💾 حفظ الزبون</button>
+            <button class="btn btn-secondary" onclick="clearCustomerInputs()">🔄 مسح الحقول</button>
+          </div>
+        </div>
+
+        <!-- Customers Table Section - Bottom -->
+        <div class="customers-table-section">
+          <div class="content-header">
+            <h3>📋 قائمة الزبائن</h3>
+            <div class="content-actions">
+              <input type="text" id="customerSearch" placeholder="🔍 البحث عن زبون..." style="padding: 8px; border: 1px solid #ddd; border-radius: 5px;">
+              <span id="customerCount">0 زبون</span>
+            </div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>👥 اسم الزبون</th>
+                <th>📞 رقم الهاتف</th>
+                <th>📧 البريد الإلكتروني</th>
+                <th>📍 العنوان</th>
+                <th>🧾 عدد الفواتير</th>
+                <th>💰 إجمالي المشتريات</th>
+                <th>⚙️ الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody id="customersTableBody">
+              <tr>
+                <td colspan="7">
+                  <div class="empty-state">
+                    <h3>👥 جاري تحميل الزبائن...</h3>
+                    <p>يتم تحميل قائمة الزبائن</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div class="stat-card-mini">
-      <div class="stat-number-mini" id="totalStock">0</div>
-      <div class="stat-label-mini">إجمالي المخزون</div>
+  </div>
+
+    <!-- Stats Section -->
+    <div class="stats-row">
+      <div class="stat-card-mini">
+        <div class="stat-number-mini" id="totalProducts">0</div>
+        <div class="stat-label-mini">إجمالي المنتجات</div>
+      </div>
+      <div class="stat-card-mini">
+        <div class="stat-number-mini" id="totalStock">0</div>
+        <div class="stat-label-mini">إجمالي المخزون</div>
+      </div>
+      <div class="stat-card-mini">
+        <div class="stat-number-mini" id="totalValue">0</div>
+        <div class="stat-label-mini">قيمة المخزون</div>
+      </div>
+      <div class="stat-card-mini">
+        <div class="stat-number-mini" id="lowStock">0</div>
+        <div class="stat-label-mini">منخفض المخزون</div>
+      </div>
     </div>
-    <div class="stat-card-mini">
-      <div class="stat-number-mini" id="totalValue">0</div>
-      <div class="stat-label-mini">قيمة المخزون</div>
+      </div>
     </div>
-    <div class="stat-card-mini">
-      <div class="stat-number-mini" id="lowStock">0</div>
-      <div class="stat-label-mini">منخفض المخزون</div>
+  </main>
+</div>
+
+
+<!-- Supplier Modal -->
+<div id="supplierModal" class="invoice-modal">
+  <div class="invoice-modal-content">
+    <div class="invoice-modal-header">
+      <h3>🏢 إضافة شركة جديدة</h3>
+    </div>
+    <div class="invoice-modal-body">
+      <div class="form-grid-modern">
+        <div class="form-group">
+          <label for="supplierName">🏢 اسم الشركة</label>
+          <input type="text" id="supplierName" class="form-input" placeholder="أدخل اسم الشركة">
+        </div>
+        <div class="form-group">
+          <label for="supplierPhone">📞 رقم الهاتف</label>
+          <input type="text" id="supplierPhone" class="form-input" placeholder="أدخل رقم الهاتف">
+        </div>
+        <div class="form-group">
+          <label for="supplierEmail">📧 البريد الإلكتروني</label>
+          <input type="email" id="supplierEmail" class="form-input" placeholder="أدخل البريد الإلكتروني">
+        </div>
+        <div class="form-group">
+          <label for="supplierAddress">📍 العنوان</label>
+          <input type="text" id="supplierAddress" class="form-input" placeholder="أدخل العنوان">
+        </div>
+      </div>
+      <div class="invoice-actions">
+        <button class="btn btn-primary" onclick="saveSupplier()">💾 حفظ</button>
+        <button class="btn btn-secondary" onclick="closeSupplierModal()">إغلاق</button>
+      </div>
     </div>
   </div>
 </div>
