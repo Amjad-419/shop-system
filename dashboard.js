@@ -2,6 +2,18 @@
 // Configuration
 const API = "http://localhost:3001/api/products";
 const INVOICES_API = "http://localhost:3001/api/invoices";
+
+// =====================
+// 💰 FORMAT PRICE
+// =====================
+function formatPrice(price) {
+  return new Intl.NumberFormat('ar-SA', {
+    style: 'currency',
+    currency: 'SYP',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0
+  }).format(price || 0);
+}
 let currentPage = 'products';
 let dbConnected = false;
 
@@ -16,11 +28,11 @@ let currentInvoice = null;
 
 // Show specific page
 function showPage(pageName) {
-  // Update active tab
-  document.querySelectorAll('.nav-tab').forEach(tab => {
-    tab.classList.remove('active');
+  // Update active nav item
+  document.querySelectorAll('.nav-item').forEach(item => {
+    item.classList.remove('active');
   });
-  document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
+  document.querySelector(`.nav-item[data-page="${pageName}"]`).classList.add('active');
   
   // Hide all pages
   document.querySelectorAll('.page-content').forEach(page => {
@@ -34,7 +46,8 @@ function showPage(pageName) {
   const titles = {
     products: '📦 إدارة المنتجات',
     pos: '💰 نقطة البيع',
-    invoices: '🧾 الفواتير'
+    invoices: '🧾 الفواتير',
+    suppliers: '🏢 الشركات والموردون'
   };
   document.getElementById('pageTitle').textContent = titles[pageName];
   
@@ -46,6 +59,13 @@ function showPage(pageName) {
     loadPOSProducts();
   } else if (pageName === 'invoices') {
     loadInvoices();
+  } else if (pageName === 'suppliers') {
+    loadSuppliers();
+  } else if (pageName === 'customers') {
+    loadCustomers();
+  } else if (pageName === 'products') {
+    // Load suppliers to update dropdown when products page loads
+    loadSuppliers();
   }
   
   // Update stats
@@ -54,9 +74,9 @@ function showPage(pageName) {
 
 // Refresh current page
 function refreshCurrentPage() {
-  // Get current active tab to find page name
-  const activeTab = document.querySelector('.nav-tab.active');
-  const pageName = activeTab ? activeTab.getAttribute('data-page') : '';
+  // Get current active nav item to find page name
+  const activeItem = document.querySelector('.nav-item.active');
+  const pageName = activeItem ? activeItem.getAttribute('data-page') : '';
   
   console.log('🔄 Refreshing page:', pageName); // Debug log
   
@@ -67,9 +87,17 @@ function refreshCurrentPage() {
   } else if (pageName === 'products') {
     console.log('🔄 Loading products...');
     loadProducts();
+    // Also load suppliers to update dropdown
+    loadSuppliers();
   } else if (pageName === 'invoices') {
     console.log('🔄 Loading invoices...');
     loadInvoices();
+  } else if (pageName === 'suppliers') {
+    console.log('🔄 Loading suppliers...');
+    loadSuppliers();
+  } else if (pageName === 'customers') {
+    console.log('🔄 Loading customers...');
+    loadCustomers();
   } else {
     console.log('🔄 Unknown page, just updating stats');
   }
@@ -148,7 +176,7 @@ function displayProducts(productList) {
   if (productList.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="6">
+        <td colspan="9">
           <div class="empty-state">
             <h3>📦 لا توجد منتجات</h3>
             <p>أضف منتجات جديدة لبدء إدارة المخزون</p>
@@ -178,14 +206,17 @@ function displayProducts(productList) {
       <tr>
         <td><strong>${p.name || 'غير محدد'}</strong></td>
         <td>${p.category || 'غير محدد'}</td>
+        <td>${p.supplier || '-'}</td>
         <td>${formatPrice(p.purchase_price || 0)}</td>
         <td>${formatPrice(p.sale_price || 0)}</td>
         <td>
           <span class="stock-badge ${stockClass}">${quantity} ${stockText}</span>
         </td>
+        <td>${p.capacity || 1}</td>
+        <td>${p.unit || 'قطعة'}</td>
         <td>
           <div class="action-buttons">
-            <button class="btn-edit" onclick="fillEdit(${p.id}, '${p.name || 'غير محدد'}', '${p.category || 'غير محدد'}', ${parseFloat(p.purchase_price || 0)}, ${parseFloat(p.sale_price || 0)}, ${p.quantity || 0})">✏️ تعديل</button>
+            <button class="btn-edit" onclick="fillEdit(${p.id})">✏️ تعديل</button>
             <button class="btn-delete" onclick="deleteProduct(${p.id})">🗑️ حذف</button>
           </div>
         </td>
@@ -220,9 +251,12 @@ async function saveProduct() {
   const product = {
     name: document.getElementById("name").value,
     category: document.getElementById("category").value,
+    supplier: document.getElementById("supplier").value,
     purchase_price: parseFloat(document.getElementById("purchase").value) || 0,
     sale_price: parseFloat(document.getElementById("sale").value) || 0,
-    quantity: parseInt(document.getElementById("qty").value) || 0
+    quantity: parseInt(document.getElementById("qty").value) || 0,
+    capacity: parseFloat(document.getElementById("capacity").value) || 1,
+    unit: document.getElementById("unit").value || 'قطعة'
   };
 
   if (!product.name) {
@@ -311,26 +345,44 @@ async function deleteProduct(id) {
 }
 
 // Fill edit form
-function fillEdit(id, n, c, p, s, q) {
-  editId = id;
+async function fillEdit(id) {
+  try {
+    // Get product data from server
+    const response = await fetch(`${API}/${id}`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch product');
+    }
+    
+    const product = await response.json();
+    
+    editId = id;
+    document.getElementById("formTitle").textContent = "✏️ تعديل منتج";
+    document.getElementById("name").value = product.name || '';
+    document.getElementById("category").value = product.category || '';
+    document.getElementById("supplier").value = product.supplier || '';
+    document.getElementById("purchase").value = product.purchase_price || 0;
+    document.getElementById("sale").value = product.sale_price || 0;
+    document.getElementById("qty").value = product.quantity || 0;
+    document.getElementById("capacity").value = product.capacity || 1;
+    document.getElementById("unit").value = product.unit || 'قطعة';
 
-  document.getElementById("formTitle").textContent = "✏️ تعديل منتج";
-  document.getElementById("name").value = n;
-  document.getElementById("category").value = c;
-  document.getElementById("purchase").value = p;
-  document.getElementById("sale").value = s;
-  document.getElementById("qty").value = q;
-
-  document.getElementById("name").focus();
+    document.getElementById("name").focus();
+  } catch (error) {
+    console.error('Error loading product for edit:', error);
+    alert('❌ فشل في تحميل بيانات المنتج للتعديل');
+  }
 }
 
 // Clear inputs
 function clearInputs() {
   document.getElementById("name").value = "";
   document.getElementById("category").value = "";
+  document.getElementById("supplier").value = "";
   document.getElementById("purchase").value = "";
   document.getElementById("sale").value = "";
   document.getElementById("qty").value = "";
+  document.getElementById("capacity").value = "";
+  document.getElementById("unit").value = "قطعة";
 }
 
 // Search products
@@ -352,6 +404,10 @@ function searchProducts() {
 
 // POS Functions
 function loadPOSProducts() {
+  console.log('🛍️ loadPOSProducts() Debug:');
+  console.log('  All products available:', allProducts.length);
+  console.log('  All products:', allProducts);
+  
   // Use existing products for POS
   posProducts = [...allProducts];
   displayPOSProducts(posProducts);
@@ -360,10 +416,14 @@ function loadPOSProducts() {
 function displayPOSProducts(productList) {
   const productGrid = document.getElementById("productGrid");
   
+  console.log('🛍️ displayPOSProducts() Debug:');
+  console.log('  Product list length:', productList.length);
+  console.log('  Product list:', productList);
+  
   if (productList.length === 0) {
     productGrid.innerHTML = `
       <div class="empty-cart">
-        <h4>لا توجد منتجات</h4>
+        <h4>📦 لا توجد منتجات</h4>
         <p>أضف منتجات أولاً من قسم إدارة المنتجات</p>
       </div>
     `;
@@ -373,20 +433,37 @@ function displayPOSProducts(productList) {
   let grid = "";
 
   productList.forEach(p => {
-    const quantity = p.quantity || 0;
+    const quantity = parseInt(p.quantity) || 0;
     const inStock = quantity > 0;
+    const salePrice = parseFloat(p.sale_price) || 0;
+    
+    console.log(`  📊 Processing product: ${p.name}, Stock: ${quantity}, Price: ${salePrice}`);
+    
+    const capacity = parseFloat(p.capacity) || 1;
+    const unit = p.unit || 'قطعة';
+    
+    // Display capacity only for all products
+    let stockInfo = '';
+    if (unit === 'قطعة' || unit === 'صندوق' || unit === 'عبوة') {
+      // For pieces, show single unit capacity only
+      stockInfo = `السعة: 1 ${unit}`;
+    } else {
+      // For measuring units, show capacity only
+      stockInfo = `السعة: ${capacity} ${unit}`;
+    }
     
     grid += `
       <div class="product-card ${!inStock ? 'out-of-stock' : ''}" onclick="addToCart(${p.id})">
         <div class="product-name">${p.name || 'غير محدد'}</div>
-        <div class="product-price">${formatPrice(p.sale_price || 0)}</div>
-        <div class="product-stock">${quantity} متوفر</div>
+        <div class="product-price">${formatPrice(salePrice)}</div>
+        <div class="product-stock">${stockInfo}</div>
         ${!inStock ? '<div class="out-of-stock-label">نفد المخزون</div>' : ''}
       </div>
     `;
   });
 
   productGrid.innerHTML = grid;
+  console.log('✅ Products displayed in POS grid');
 }
 
 function addToCart(productId) {
@@ -433,13 +510,22 @@ function addToCart(productId) {
   } else {
     // Einfache Preis-Initialisierung
     const price = parseFloat(product.sale_price) || 0;
-    const quantity = 1;
+    const capacity = parseFloat(product.capacity) || 1;
+    const unit = product.unit || 'قطعة';
+    
+    // Use actual capacity for measuring units, 1 for pieces
+    let actualQuantity = 1;
+    if (unit !== 'قطعة' && unit !== 'صندوق' && unit !== 'عبوة') {
+      actualQuantity = capacity;
+    }
+    
     const newItem = {
       product_id: productId,
       product_name: product.name,
-      quantity: quantity,
+      quantity: actualQuantity,
       price: price,
-      total: price * quantity
+      unit: unit,
+      total: price * actualQuantity
     };
     console.log('  ✅ New item created:', newItem);
     cart.push(newItem);
@@ -495,15 +581,16 @@ function updateCart() {
     const displayPrice = item.price || 0;
     const displayQuantity = item.quantity || 0;
     
+    const unit = item.unit || 'قطعة';
     cartHTML += `
       <div class="cart-item">
         <div class="cart-item-info">
           <div class="cart-item-name">${item.product_name}</div>
-          <div class="cart-item-price">${formatPrice(displayPrice)} × ${displayQuantity}</div>
+          <div class="cart-item-price">${formatPrice(displayPrice)} × ${displayQuantity} ${unit}</div>
         </div>
         <div class="cart-item-actions">
           <button class="quantity-btn" onclick="updateQuantity(${index}, -1)">-</button>
-          <span class="cart-item-quantity">${displayQuantity}</span>
+          <span class="cart-item-quantity">${displayQuantity} ${unit}</span>
           <button class="quantity-btn" onclick="updateQuantity(${index}, 1)">+</button>
           <button class="btn-remove" onclick="removeFromCart(${index})">🗑️</button>
         </div>
@@ -628,27 +715,35 @@ async function processSale() {
 
 // Invoice functions
 async function loadInvoices() {
+  console.log('🧾 loadInvoices() Starting...');
   try {
+    console.log('📡 Fetching invoices from:', INVOICES_API);
     const res = await fetch(INVOICES_API);
+    
     if (!res.ok) {
       throw new Error(`HTTP ${res.status}: ${res.statusText}`);
     }
+    
     const data = await res.json();
+    console.log('📊 Invoices data received:', data);
+    console.log('📊 Invoices count:', data.length);
+    
     allInvoices = data;
     displayInvoices(data);
-    console.log(`🧾 تم تحميل ${data.length} فاتورة بنجاح`);
+    console.log(`✅ تم تحميل ${data.length} فاتورة بنجاح`);
   } catch (error) {
-    console.log('فشل في تحميل الفواتير:', error);
+    console.error('❌ فشل في تحميل الفواتير:', error);
     
     // Show empty state when disconnected
     const tbody = document.getElementById("invoicesTableBody");
     if (tbody) {
       tbody.innerHTML = `
         <tr>
-          <td colspan="5">
+          <td colspan="6">
             <div class="empty-state">
               <h3>🔌 لا يمكن تحميل الفواتير</h3>
               <p>جاري محاولة إعادة الاتصال...</p>
+              <p><small>خطأ: ${error.message}</small></p>
             </div>
           </td>
         </tr>
@@ -658,12 +753,21 @@ async function loadInvoices() {
 }
 
 function displayInvoices(invoices) {
+  console.log('🧾 displayInvoices() Debug:');
+  console.log('  Invoices received:', invoices.length);
+  console.log('  Invoices data:', invoices);
+  
   const tbody = document.getElementById("invoicesTableBody");
+  
+  if (!tbody) {
+    console.log('❌ invoicesTableBody not found!');
+    return;
+  }
   
   if (invoices.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="5">
+        <td colspan="6">
           <div class="empty-state">
             <h3>🧾 لا توجد فواتير</h3>
             <p>ابدأ إجراء عمليات البيع لإنشاء فواتير</p>
@@ -676,13 +780,23 @@ function displayInvoices(invoices) {
 
   let rows = "";
 
-  invoices.forEach(inv => {
+  invoices.forEach((inv, index) => {
+    console.log(`  📊 Processing invoice ${index + 1}:`, inv);
+    
+    const invoiceDate = inv.created_at ? new Date(inv.created_at).toLocaleString('ar-SA') : '-';
+    const totalPrice = parseFloat(inv.total_price) || 0;
+    const itemsCount = inv.items_count || 0;
+    const categories = inv.categories || '-';
+    
+    console.log(`    Date: ${invoiceDate}, Price: ${totalPrice}, Items: ${itemsCount}`);
+    
     rows += `
       <tr>
-        <td>${inv.invoice_number}</td>
-        <td>${new Date(inv.created_at).toLocaleString()}</td>
-        <td>${formatPrice(inv.total_price)}</td>
-        <td>${inv.items_count || 0} منتج</td>
+        <td><strong>${inv.invoice_number || 'N/A'}</strong></td>
+        <td>${invoiceDate}</td>
+        <td>${formatPrice(totalPrice)}</td>
+        <td>${itemsCount} منتج</td>
+        <td>${categories}</td>
         <td>
           <button class="btn-small btn-primary" onclick="viewInvoiceDetails(${inv.id})">📄 عرض</button>
           <button class="btn-small btn-danger" onclick="deleteInvoice(${inv.id})">🗑️ حذف</button>
@@ -692,6 +806,7 @@ function displayInvoices(invoices) {
   });
 
   tbody.innerHTML = rows;
+  console.log('✅ Invoices displayed successfully');
 }
 
 function closeInvoiceModal() {
@@ -951,8 +1066,7 @@ document.addEventListener('DOMContentLoaded', function() {
   document.getElementById('search').addEventListener('input', searchProducts);
   document.getElementById('searchBox').addEventListener('input', searchPOSProducts);
   
-  // Initialize currency display
-  updateCurrencyDisplay();
+  // Currency display will be initialized when needed
   
   // Show products page by default
   showPage('products');
@@ -1042,3 +1156,342 @@ document.addEventListener('DOMContentLoaded', function() {
   // Start with normal mode
   startNormalMode();
 });
+
+// =====================
+// 🎯 GLOBAL VARIABLES
+// =====================
+let allSuppliers = [];
+const SUPPLIERS_API = "http://localhost:3001/api/suppliers";
+
+// Load suppliers
+async function loadSuppliers() {
+  try {
+    const response = await fetch(SUPPLIERS_API);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    allSuppliers = await response.json();
+    displaySuppliers(allSuppliers);
+    updateSupplierSelect(); // Update dropdown when loading
+    console.log('🏢 تم تحميل قائمة الشركات');
+  } catch (error) {
+    console.log('فشل في تحميل الشركات:', error);
+    const tbody = document.getElementById("suppliersTableBody");
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="6">
+            <div class="empty-state">
+              <h3>🔌 لا يمكن تحميل الشركات</h3>
+              <p>جاري محاولة إعادة الاتصال...</p>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+  }
+}
+
+// Display suppliers
+function displaySuppliers(suppliers) {
+  const tbody = document.getElementById("suppliersTableBody");
+  
+  if (suppliers.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="6">
+          <div class="empty-state">
+            <h3>🏢 لا توجد شركات</h3>
+            <p>ابدأ بإضافة الشركات والموردين</p>
+          </div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  let rows = "";
+  suppliers.forEach(supplier => {
+    rows += `
+      <tr>
+        <td><strong>${supplier.name || 'غير محدد'}</strong></td>
+        <td>${supplier.phone || '-'}</td>
+        <td>${supplier.email || '-'}</td>
+        <td>${supplier.address || '-'}</td>
+        <td>${supplier.productCount || 0} منتج</td>
+        <td>
+          <div class="action-buttons">
+            <button class="btn-edit" onclick="editSupplier(${supplier.id})">✏️ تعديل</button>
+            <button class="btn-delete" onclick="deleteSupplier(${supplier.id})">🗑️ حذف</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  });
+
+  tbody.innerHTML = rows;
+}
+
+// Show add supplier modal
+function showAddSupplierModal() {
+  document.getElementById('supplierModal').style.display = 'flex';
+  clearSupplierForm();
+}
+
+// Close supplier modal
+function closeSupplierModal() {
+  document.getElementById('supplierModal').style.display = 'none';
+  clearSupplierForm();
+}
+
+// Clear supplier form
+function clearSupplierForm() {
+  document.getElementById('supplierName').value = '';
+  document.getElementById('supplierPhone').value = '';
+  document.getElementById('supplierEmail').value = '';
+  document.getElementById('supplierAddress').value = '';
+}
+
+// Save supplier
+async function saveSupplier() {
+  const name = document.getElementById('supplierName').value.trim();
+  const phone = document.getElementById('supplierPhone').value.trim();
+  const email = document.getElementById('supplierEmail').value.trim();
+  const address = document.getElementById('supplierAddress').value.trim();
+
+  if (!name) {
+    alert('❌ يجب إدخال اسم الشركة');
+    return;
+  }
+
+  // Save to database
+  try {
+    const response = await fetch(SUPPLIERS_API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: name,
+        phone: phone,
+        email: email,
+        address: address
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('فشل في حفظ الشركة');
+    }
+    
+    // Reload suppliers list
+    await loadSuppliers();
+    closeSupplierModal();
+    
+    alert('✅ تم إضافة الشركة بنجاح');
+  } catch (error) {
+    console.error('Error saving supplier:', error);
+    alert('❌ فشل في حفظ الشركة: ' + error.message);
+  }
+}
+
+// Edit supplier (placeholder)
+function editSupplier(id) {
+  alert('🔧 وظيفة التعديل قيد التطوير');
+}
+
+// Update supplier dropdown in products form
+function updateSupplierSelect() {
+  const supplierSelect = document.getElementById('supplier');
+  if (!supplierSelect) return;
+  
+  // Clear existing options except the first two
+  const currentValue = supplierSelect.value;
+  supplierSelect.innerHTML = `
+    <option value="">-- اختر الشركة --</option>
+    <option value="غير مسجل">غير مسجل</option>
+  `;
+  
+  // Add suppliers to dropdown
+  allSuppliers.forEach(supplier => {
+    const option = document.createElement('option');
+    option.value = supplier.name;
+    option.textContent = supplier.name;
+    supplierSelect.appendChild(option);
+  });
+  
+  // Restore previous selection if it still exists
+  if (currentValue) {
+    supplierSelect.value = currentValue;
+  }
+}
+
+// ==================== CUSTOMERS MANAGEMENT ====================
+let allCustomers = [];
+const CUSTOMERS_API = "http://localhost:3001/api/customers";
+
+// Load customers
+async function loadCustomers() {
+  try {
+    const response = await fetch(CUSTOMERS_API);
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+    allCustomers = await response.json();
+    displayCustomers(allCustomers);
+    console.log('👥 تم تحميل قائمة الزبائن');
+  } catch (error) {
+    console.log('فشل في تحميل الزبائن:', error);
+    const tbody = document.getElementById("customersTableBody");
+    if (tbody) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="7">
+            <div class="empty-state">
+              <h3>🔌 لا يمكن تحميل الزبائن</h3>
+              <p>جاري محاولة إعادة الاتصال...</p>
+            </div>
+          </td>
+        </tr>
+      `;
+    }
+  }
+}
+
+// Display customers
+function displayCustomers(customers) {
+  const tbody = document.getElementById("customersTableBody");
+  const countElement = document.getElementById("customerCount");
+  
+  if (!tbody) return;
+  
+  if (customers.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7">
+          <div class="empty-state">
+            <h3>👥 لا يوجد زبائن</h3>
+            <p>أضف زبونك الأول باستخدام النموذج أعلاه</p>
+          </div>
+        </td>
+      </tr>
+    `;
+    if (countElement) countElement.textContent = '0 زبون';
+    return;
+  }
+
+  tbody.innerHTML = customers.map(customer => `
+    <tr>
+      <td><strong>${customer.name}</strong></td>
+      <td>${customer.phone || '-'}</td>
+      <td>${customer.email || '-'}</td>
+      <td>${customer.address || '-'}</td>
+      <td>${customer.invoice_count || 0}</td>
+      <td>${customer.total_purchases ? parseFloat(customer.total_purchases).toLocaleString('ar-EG', {minimumFractionDigits: 2}) + ' ل.س' : '0 ل.س'}</td>
+      <td>
+        <button class="btn-small btn-secondary" onclick="editCustomer(${customer.id})">✏️ تعديل</button>
+        <button class="btn-small btn-danger" onclick="deleteCustomer(${customer.id})">🗑️ حذف</button>
+      </td>
+    </tr>
+  `).join('');
+
+  if (countElement) countElement.textContent = `${customers.length} زبون`;
+}
+
+// Save customer
+async function saveCustomer() {
+  const name = document.getElementById('customerName').value.trim();
+  const phone = document.getElementById('customerPhone').value.trim();
+  const email = document.getElementById('customerEmail').value.trim();
+  const address = document.getElementById('customerAddress').value.trim();
+
+  if (!name) {
+    alert('❌ يجب إدخال اسم الزبون');
+    return;
+  }
+
+  // Save to database
+  try {
+    const response = await fetch(CUSTOMERS_API, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        name: name,
+        phone: phone,
+        email: email,
+        address: address
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('فشل في حفظ الزبون');
+    }
+    
+    // Reload customers list
+    await loadCustomers();
+    clearCustomerInputs();
+    
+    alert('✅ تم إضافة الزبون بنجاح');
+  } catch (error) {
+    console.error('Error saving customer:', error);
+    alert('❌ فشل في حفظ الزبون: ' + error.message);
+  }
+}
+
+// Clear customer form
+function clearCustomerInputs() {
+  document.getElementById('customerName').value = '';
+  document.getElementById('customerPhone').value = '';
+  document.getElementById('customerEmail').value = '';
+  document.getElementById('customerAddress').value = '';
+}
+
+// Edit customer (placeholder)
+function editCustomer(id) {
+  alert('🔧 وظيفة التعديل قيد التطوير');
+}
+
+// Delete customer
+async function deleteCustomer(id) {
+  if (confirm('هل تريد حذف هذا الزبون؟')) {
+    try {
+      const response = await fetch(`${CUSTOMERS_API}/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error('فشل في حذف الزبون');
+      }
+      
+      // Reload customers list
+      await loadCustomers();
+      alert('✅ تم حذف الزبون');
+    } catch (error) {
+      console.error('Error deleting customer:', error);
+      alert('❌ فشل في حذف الزبون: ' + error.message);
+    }
+  }
+}
+
+// Delete supplier
+async function deleteSupplier(id) {
+  if (confirm('هل تريد حذف هذه الشركة؟')) {
+    try {
+      const response = await fetch(`${SUPPLIERS_API}/${id}`, {
+        method: 'DELETE'
+      });
+      
+      if (!response.ok) {
+        throw new Error('فشل في حذف الشركة');
+      }
+      
+      // Reload suppliers list
+      await loadSuppliers();
+      alert('✅ تم حذف الشركة');
+    } catch (error) {
+      console.error('Error deleting supplier:', error);
+      alert('❌ فشل في حذف الشركة: ' + error.message);
+    }
+  }
+}
